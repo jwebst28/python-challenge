@@ -1,59 +1,78 @@
 import os
 import csv
 
-pollData = os.path.join("PyPoll/Resources","election_data.csv")
+#creating object out of csv file
+budget_data=os.path.join("PyBank/Resources", "budget_data.csv")
+
+total_months = 0    
+total_pl = 0
+value = 0
+change = 0
+dates = []
+profits = []
 
 
-# Open the CSV file
-with open(pollData, newline="", encoding="utf-8") as csvfile:
-    csvreader = csv.reader(csvfile, delimiter=",")
+#opening & reading the CSV file
+with open(budget_data) as csvfile:
+    csvreader = csv.reader(csvfile, delimiter = ",")
 
-  # The total number of votes cast (row count after the header)
-    next(csvreader)
-    data = list(csvreader)
-    row_count = len(data)
+    #viewing the header row
+    csv_header = next(csvreader)
 
-  # Create new list from CSV column "C" to get a complete list of candidates who received votes
-    candilist = list()
-    tally = list()
-    for i in range (0,row_count):
-        candidate = data[i][2]
-        tally.append(candidate)
-        if candidate not in candilist: 
-            candilist.append(candidate)
-    candicount = len(candilist)
+        #viewing the first row (to track all changes properly)
+    first_row = next(csvreader)
+    total_months += 1
+    total_pl += int(first_row[1])
+    value = int(first_row[1])
 
-  # The total number of votes each candidate won & the percentage of votes
-    votes = list()
-    percentage = list()
-    for j in range (0,candicount):
-        name = candilist[j]
-        votes.append(tally.count(name))
-        vprct = votes[j]/row_count
-        percentage.append(vprct)
+        #Sorting through each row of data after the first row
+    for row in csvreader:
+            #recording records of  dates
+            dates.append(row[0])
 
-  #  winner of the election calculated from popular vote.
-    winner = votes.index(max(votes))    
+            #compute for the change, then add changes to list
+            change = int(row[1])-value
+            profits.append(change)
+            value = int(row[1])
 
-# In addition, your final script should both print the analysis to the terminal and export a text file with the results.
-  # Print the results to terminal
-    print("Election Results")
-    print("----------------------------")
-    print(f"Total Votes: {row_count:,}")
-    print("----------------------------")
-    for k in range (0,candicount): 
-        print(f"{candilist[k]}: {percentage[k]:.3%} ({votes[k]:,})")
-    print("----------------------------")
-    print(f"Winner: {candilist[winner]}")
-    print("----------------------------")
+            #total number of months 
+            total_months += 1 
 
-  # Print the results to "PyPoll.txt" file
-    print("Election Results", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
-    print(f"Total Votes: {row_count:,}", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
-    for k in range (0,candicount): 
-        print(f"{candilist[k]}: {percentage[k]:.3%} ({votes[k]:,})", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
-    print(f"Winner: {candilist[winner]}", file=open("PyPoll.txt", "a"))
-    print("----------------------------", file=open("PyPoll.txt", "a"))
+            #total net amount of "Profit/losses"
+            total_pl = total_pl + int(row[1])
+
+        #greatest increase in profits 
+    greatest_increase = max(profits)
+    greatest_index = profits.index(greatest_increase)
+    greatest_date = dates[greatest_index]
+
+        #Greatest decrease (lowest increase) in profits
+    greatest_decrease = min(profits)
+    worst_index = profits.index(greatest_decrease)
+    worst_date = dates[worst_index]
+
+    #average fluncuations in "Profit/Losses" between months"
+    avg_change = sum(profits)/len(profits)
+
+
+
+#Displaying final results
+print("Fiancial Analysis")
+print("---------------------")
+print(f"Total Months: {str(total_months)}")
+print(f"Total: ${str(total_pl)}")
+print(f"Average Change: ${str(round(avg_change,2))}")
+print(f"Greatest Increase in Profits: {greatest_date} (${str(greatest_increase)})")
+print(f"Greatest Decrease in Profits: {worst_date} (${str(greatest_decrease)})")
+
+#Changing to .txt file
+output = open("output.txt", "w")
+
+line1 = "Financial Analysis"
+line2 = "---------------------" 
+line3 = str(f"Total Months: {str(total_months)}")
+line4 = str(f"Total: ${str(total_pl)}")
+line5 = str(f"Average Change: ${str(round(avg_change,2))}")
+line6 = str(f"Greatest Increase in Profits: {greatest_date} (${str(greatest_increase)})")
+line7 = str(f"Greatest Decrease in Profits: {worst_date} (${str(greatest_decrease)})")
+output.write('{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(line1,line2,line3,line4,line5,line6,line7))
